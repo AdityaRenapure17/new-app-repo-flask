@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-app
+  template:
+    metadata:
+      labels:
+        app: demo-app
+    spec:
+      containers:
+      - name: demo-app
+        image: python:3.9-slim
+        command: ["/bin/sh", "-c"]
+        args: ["pip install flask pymysql cryptography && python /app/app.py"]
+        env:
+        - name: DB_HOST
+          value: "10.38.92.90"
+        - name: DB_USER
+          value: "admin"
+        - name: DB_PASSWORD
+          value: "Nutanix/4u"
+        - name: DB_NAME
+          value: "demo_app"
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /app
+          name: app-code
+      volumes:
+      - name: app-code
+        configMap:
+          name: demo-app-code
+
