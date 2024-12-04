@@ -1,31 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-app
+  name: app-new-traefik
+  namespace: worker-cluster-wxgnf-hhk77
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: demo-app
+      app: app-new-traefik
   template:
     metadata:
       labels:
-        app: demo-app
+        app: app-new-traefik
     spec:
       containers:
-      - name: demo-app
+      - name: app-new-traefik
         image: python:3.9-slim
         command: ["/bin/sh", "-c"]
         args: ["pip install flask pymysql cryptography && python /app/app.py"]
         env:
         - name: DB_HOST
-          value: "10.38.92.90"
+          value: "10.38.92.200"
         - name: DB_USER
           value: "admin"
         - name: DB_PASSWORD
           value: "Nutanix/4u"
         - name: DB_NAME
-          value: "demo_app"
+          value: "app2_db"
         ports:
         - containerPort: 5000
         volumeMounts:
@@ -34,5 +35,4 @@ spec:
       volumes:
       - name: app-code
         configMap:
-          name: demo-app-code
-
+          name: app-new-traefik-code
