@@ -1,7 +1,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: demo-app-code
+  name: app-new-traefik-code
+  namespace: worker-cluster-wxgnf-hhk77
 data:
   app.py: |
     from flask import Flask, request, jsonify
@@ -13,11 +14,11 @@ data:
     # Configure logging
     logging.basicConfig(level=logging.DEBUG)
 
-    # Database connection settings
-    DB_HOST = "10.38.92.90"  # Replace with your MySQL server IP
+    # Database connection settings (read from environment variables)
+    DB_HOST = "10.38.92.200"  # Replace with your MySQL server IP
     DB_USER = "admin"
     DB_PASSWORD = "Nutanix/4u"
-    DB_NAME = "demo_app"
+    DB_NAME = "app2_db"
 
     def get_db_connection():
         """Create and return a database connection."""
@@ -31,22 +32,15 @@ data:
     @app.route('/')
     def home():
         """Root endpoint to verify the app is running."""
-        return "Welcome to the Demo App! Available endpoints: /create, /read, /update, /delete"
+        return "Welcome to App New Traefik! Available endpoints: /create, /read, /update, /delete"
 
     @app.route('/create', methods=['POST'])
     def create():
-        """Endpoint to create a new record."""
         try:
-            # Debug log for incoming request data
-            app.logger.debug("Request data: %s", request.json)
-
-            # Extract and validate the request data
             data = request.json
             if not data or 'name' not in data:
-                app.logger.error("Invalid input: %s", data)
                 return jsonify({"error": "Invalid input"}), 400
 
-            # Insert the data into the database
             connection = get_db_connection()
             with connection.cursor() as cursor:
                 cursor.execute("INSERT INTO demo_table (name) VALUES (%s)", (data['name'],))
@@ -56,12 +50,10 @@ data:
             return jsonify({"message": "Record created"}), 201
 
         except Exception as e:
-            app.logger.error("Error in /create: %s", e)
             return jsonify({"error": str(e)}), 500
 
     @app.route('/read', methods=['GET'])
     def read():
-        """Endpoint to read all records."""
         try:
             connection = get_db_connection()
             with connection.cursor() as cursor:
@@ -72,16 +64,13 @@ data:
             return jsonify(rows), 200
 
         except Exception as e:
-            app.logger.error("Error in /read: %s", e)
             return jsonify({"error": str(e)}), 500
 
     @app.route('/update', methods=['PUT'])
     def update():
-        """Endpoint to update an existing record."""
         try:
             data = request.json
             if not data or 'id' not in data or 'name' not in data:
-                app.logger.error("Invalid input: %s", data)
                 return jsonify({"error": "Invalid input"}), 400
 
             connection = get_db_connection()
@@ -93,16 +82,13 @@ data:
             return jsonify({"message": "Record updated"}), 200
 
         except Exception as e:
-            app.logger.error("Error in /update: %s", e)
             return jsonify({"error": str(e)}), 500
 
     @app.route('/delete', methods=['DELETE'])
     def delete():
-        """Endpoint to delete a record."""
         try:
             data = request.json
             if not data or 'id' not in data:
-                app.logger.error("Invalid input: %s", data)
                 return jsonify({"error": "Invalid input"}), 400
 
             connection = get_db_connection()
@@ -114,9 +100,7 @@ data:
             return jsonify({"message": "Record deleted"}), 200
 
         except Exception as e:
-            app.logger.error("Error in /delete: %s", e)
             return jsonify({"error": str(e)}), 500
 
     if __name__ == "__main__":
         app.run(host='0.0.0.0', port=5000)
-
